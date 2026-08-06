@@ -1,0 +1,64 @@
+name: Scheduled Ingest
+
+permissions:
+  contents: read
+
+# Runs dispatch.py from brain-bbqs/data-ingest-task-force on this repo's
+# self-hosted runner. The runner is expected to already have:
+#   - the `dandi` CLI installed and logged in (`dandi login -i <instance>`)
+#     for every dandi_instance named in the task-force repo's
+#     dispatch/projects.yaml
+#   - local EMBER_INCOMING_DIR / EMBER_STANDARDIZED_DIR paths, set below via
+#     repository variables (Settings -> Secrets and variables -> Actions ->
+#     Variables), not hardcoded here
+#   - a runner label to target; the default below is "data-ingest" (set when
+#     registering the runner, or change runs-on to match)
+on:
+  schedule:
+    - cron: "0 * * * *" # hourly; adjust to taste
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log actions without downloading, converting, uploading, or writing state"
+        type: boolean
+        default: false
+      only:
+        description: "Restrict to one lab name (blank = all registered projects)"
+        required: false
+        default: ""
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  Dispatch:
+    runs-on: [self-hosted, data-ingest]
+    steps:
+      - name: Checkout data-ingest-task-force
+        uses: actions/checkout@v7
+        with:
+          repository: brain-bbqs/data-ingest-task-force
+          ref: main
+          path: task-force
+
+      - name: Install dispatch environment
+        run: pip install --quiet "./task-force/dispatch/envs"
+
+      - name: Run dispatch
+        working-directory: task-force
+        env:
+          EMBER_INCOMING_DIR: ${{ vars.EMBER_INCOMING_DIR }}
+          EMBER_STANDARDIZED_DIR: ${{ vars.EMBER_STANDARDIZED_DIR }}
+          DRY_RUN_FLAG: ${{ inputs.dry_run == true && '--dry-run' || '' }}
+          ONLY_FLAG: ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }}
+        run: |
+          set -eu
+          if [ -z "${EMBER_INCOMING_DIR:-}" ] || [ -z "${EMBER_STANDARDIZED_DIR:-}" ]; then
+            echo "::error::Set the EMBER_INCOMING_DIR and EMBER_STANDARDIZED_DIR repository variables (Settings > Secrets and variables > Actions > Variables) to absolute paths on this runner."
+            exit 1
+          fi
+          python3 dispatch/dispatch.py \
+            --incoming-root "$EMBER_INCOMING_DIR" \
+            --standardized-root "$EMBER_STANDARDIZED_DIR" \
+            $DRY_RUN_FLAG $ONLY_FLAG
