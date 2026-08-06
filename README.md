@@ -8,11 +8,7 @@ It checks out [`data-ingest-task-force`](https://github.com/brain-bbqs/data-inge
 ## Runner setup
 
 1. Register a self-hosted runner against this repository (Settings -> Actions -> Runners -> New self-hosted runner), giving it (in addition to the default `self-hosted` label) the label the workflow targets: `data-ingest` — or edit `runs-on` in `cron_ingest.yml` to match whatever label you use.
-2. On the runner host, install and configure:
-   - Python 3.10+ and `pip`.
-   - The [`dandi` CLI](https://github.com/dandi/dandi-cli), logged in for every archive instance named in `dispatch/projects.json` (`dandi login -i emberarchive`, run once — the workflow does not manage credentials).
-   - Any system dependencies a lab's conversion script needs (e.g. FFmpeg for Kemere) — see the lab's own README under `labs/<lab>/` in data-ingest-task-force.
-3. Create local top-level folders for the raw and standardized dandiset copies (e.g. `/data/ember-incoming`, `/data/ember-standardized`), and set them as repository variables so the workflow can find them without the paths being hardcoded in the workflow file: Settings -> Secrets and variables -> Actions -> Variables ->
+2. Create local top-level folders for the raw and standardized dandiset copies (e.g. `/data/ember-incoming`, `/data/ember-standardized`), and set them as repository variables so the workflow can find them without the paths being hardcoded in the workflow file: Settings -> Secrets and variables -> Actions -> Variables ->
    - `EMBER_INCOMING_DIR`
    - `EMBER_STANDARDIZED_DIR`
 
