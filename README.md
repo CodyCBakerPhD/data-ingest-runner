@@ -20,3 +20,11 @@ It checks out [`data-ingest-task-force`](https://github.com/brain-bbqs/data-inge
 
 - Fires automatically on the workflow's `schedule:` cron (hourly by default — adjust in `cron_ingest.yml` to match how often new sessions are expected).
 - Trigger on demand from the Actions tab (`workflow_dispatch`), optionally with `dry_run: true` (log every action, touch nothing) or `only: <lab>` to restrict to one project.
+
+## Why doesn't this repository allow pull requests from external forks?
+
+This repository uses a self-hosted runner instead of GitHub-hosted Actions runners.
+This means that external users could fork and submit a pull request that contains code modifications that might expose secrets or other hostile actions.
+While this could be mitigated through careful permissioning and approval of run triggers before accepting contributions, it is much safer overall to simply disable them.
+If you have any questions or suggestions, please raise an Issue instead.
+The repository is kept public to allow anyone to see the runtime logs of the submission process, as well as the success/failure/timestamp of the triggers.
