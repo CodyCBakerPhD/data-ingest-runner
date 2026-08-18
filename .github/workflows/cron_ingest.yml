@@ -33,7 +33,7 @@ concurrency:
 
 jobs:
   Dispatch:
-    runs-on: [self-hosted, data-ingest]
+    runs-on: [self-hosted, ember, ingest]
     steps:
       - name: Checkout data-ingest-task-force
         uses: actions/checkout@v7
