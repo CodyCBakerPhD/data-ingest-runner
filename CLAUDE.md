@@ -1,33 +1,9 @@
 # Agent instructions
 
-## Pull requests
+## Commits and PRs
 
-Every pull request you open must record the prompt that led to it, so the PR
-explains not just what changed but what was actually asked for. Reviewers can
-then tell a faithful implementation from a drifting one, and a later reader can
-reconstruct the intent without hunting down the original session.
-
-End the PR description with the originating prompt, verbatim, inside a
-collapsed `<details>` block:
-
-```markdown
-<details>
-<summary>Original prompt</summary>
-
-> ...the user's prompt, quoted exactly as it was given...
-
-</details>
-```
-
-Rules:
-
-- **Verbatim.** Quote the prompt as it was written — do not summarize, correct
-  typos, reword, or tidy it up. If it spanned several messages, include each of
-  them in order.
-- **Collapsed.** Keep it inside `<details>` so it never crowds out the summary
-  of the change itself.
-- **Last.** It goes at the end of the description, after the actual write-up.
-- **Every PR**, including small follow-ups. If a PR grew out of follow-up
-  instructions, append those to the same block rather than dropping them.
-- **Redact secrets.** If a prompt contains a credential, token, or private URL,
-  replace just that value with `[redacted]` and leave the rest untouched.
+- Always link PRs to issues when possible
+- PR titles should be human-readable and in the past tense. They should NOT use conventional commit style.
+- Keep PR descriptions as short and concise as possible: the fewest words that describe the change accurately
+- End every PR description with a `<details>` dropdown holding the prompts that asked for the work, quoted verbatim and in order: the original request first, then each follow-up as the branch grows. The prose above it stays a description of the change, not of the conversation
+- Every commit must include a `Co-Authored-By` trailer identifying your tool name and version and your underlying model and version. Format (replace all `<…>` placeholders with actual values): `Co-Authored-By: <Tool> <tool-version> / <Model> <model-version> <noreply@vendor-domain>`
