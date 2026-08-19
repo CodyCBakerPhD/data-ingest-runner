@@ -3,19 +3,9 @@ name: Scheduled Ingest
 permissions:
   contents: read
 
-# Runs dispatch.py from brain-bbqs/data-ingest-task-force on this repo's
-# self-hosted runner. The runner is expected to already have:
-#   - the `dandi` CLI installed and logged in (`dandi login -i <instance>`)
-#     for every dandi_instance named in the task-force repo's
-#     dispatch/projects.yaml
-#   - local EMBER_INCOMING_DIR / EMBER_STANDARDIZED_DIR paths, set below via
-#     repository variables (Settings -> Secrets and variables -> Actions ->
-#     Variables), not hardcoded here
-#   - a runner label to target; the default below is "data-ingest" (set when
-#     registering the runner, or change runs-on to match)
 on:
   schedule:
-    - cron: "0 * * * *" # hourly; adjust to taste
+    - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
