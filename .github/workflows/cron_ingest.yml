@@ -42,10 +42,12 @@ jobs:
       - name: Run dispatch
         working-directory: task-force
         env:
-          # dispatch.py's dandi calls inherit this directly; it also
-          # forwards it (by name only, never as a literal value) into a
-          # project's container_image, for labs whose conversion step
-          # itself needs DANDI access.
+          # dispatch.py forwards this (by name only, never as a literal
+          # value) into every container it starts: its own dandi image
+          # (dandi download/upload run only in a container now, never
+          # directly on this host) and, when set, a project's
+          # container_image too, for labs whose conversion step itself
+          # needs DANDI access.
           DANDI_API_KEY: ${{ secrets.EMBER_DANDI_API_KEY }}
           REGISTRY_PATH: ${{ vars.REGISTRY_PATH }}
           SESSIONS_PATH: ${{ vars.SESSIONS_PATH }}
