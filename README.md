@@ -12,7 +12,7 @@ It checks out [`data-ingest-task-force`](https://github.com/brain-bbqs/data-inge
    - Python 3.10+ (`python3` on `PATH`). `dispatch.py` itself is standard-library-only, so nothing else needs installing for it to run.
    - The [`dandi` CLI](https://github.com/dandi/dandi-cli), logged in for every archive instance named in `dispatch/projects.json` (`dandi login -i emberarchive`, run once — the workflow does not manage credentials).
    - Docker. Each lab's conversion step runs inside its own registered image (e.g. [`ghcr.io/brain-bbqs/kemere-r34da059514-ingest`](https://github.com/brain-bbqs/data-ingest-task-force/pkgs/container/kemere-r34da059514-ingest), currently public — no `docker login` needed), which holds only that lab's runtime environment (FFmpeg, etc.) — code and data are bind-mounted in at run time, so the runner host itself doesn't need those dependencies installed directly. A future private image would need `docker login ghcr.io` run once on the runner.
-3. Create local top-level folders for the raw and standardized dandiset copies (e.g. `/data/ember-incoming`, `/data/ember-standardized`), and set them as repository variables so the workflow can find them without the paths being hardcoded in the workflow file: Settings -> Secrets and variables -> Actions -> Variables ->
+3. Nothing else required here: `dispatch.py` picks and creates the raw/standardized folders itself (`ember-incoming`/`ember-standardized`, siblings of its own checkout on the runner) if you don't specify otherwise. To put that data somewhere else instead — a dedicated data disk/mount, say — set repository variables to absolute paths on this runner: Settings -> Secrets and variables -> Actions -> Variables ->
    - `EMBER_INCOMING_DIR`
    - `EMBER_STANDARDIZED_DIR`
 
