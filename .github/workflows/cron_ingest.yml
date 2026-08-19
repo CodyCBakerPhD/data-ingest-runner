@@ -42,27 +42,19 @@ jobs:
       - name: Run dispatch
         working-directory: task-force
         env:
-          EMBER_INCOMING_DIR: ${{ vars.EMBER_INCOMING_DIR }}
-          EMBER_STANDARDIZED_DIR: ${{ vars.EMBER_STANDARDIZED_DIR }}
           REGISTRY_PATH: ${{ vars.REGISTRY_PATH }}
           SESSIONS_PATH: ${{ vars.SESSIONS_PATH }}
           DRY_RUN_FLAG: ${{ inputs.dry_run == true && '--dry-run' || '' }}
           ONLY_FLAG: ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }}
         run: |
           set -eu
-          # dispatch.py defaults --incoming-root/--standardized-root itself
-          # (ember-incoming/ember-standardized siblings of the task-force
-          # checkout) -- these variables only need setting to put the data
-          # somewhere else.
-          INCOMING_FLAG=""
-          [ -n "${EMBER_INCOMING_DIR:-}" ] && INCOMING_FLAG="--incoming-root $EMBER_INCOMING_DIR"
-          STANDARDIZED_FLAG=""
-          [ -n "${EMBER_STANDARDIZED_DIR:-}" ] && STANDARDIZED_FLAG="--standardized-root $EMBER_STANDARDIZED_DIR"
+          # No --incoming-root/--standardized-root here: dispatch.py always
+          # picks its own default (ember-incoming/ember-standardized siblings
+          # of this checkout) -- not overridable from this workflow.
           REGISTRY_FLAG=""
           [ -n "${REGISTRY_PATH:-}" ] && REGISTRY_FLAG="--registry $REGISTRY_PATH"
           SESSIONS_FLAG=""
           [ -n "${SESSIONS_PATH:-}" ] && SESSIONS_FLAG="--sessions $SESSIONS_PATH"
           python3 dispatch/dispatch.py \
-            $INCOMING_FLAG $STANDARDIZED_FLAG \
             $REGISTRY_FLAG $SESSIONS_FLAG \
             $DRY_RUN_FLAG $ONLY_FLAG
