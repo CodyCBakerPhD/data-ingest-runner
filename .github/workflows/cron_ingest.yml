@@ -47,8 +47,11 @@ jobs:
           # (dandi download/upload run only in a container now, never
           # directly on this host) and, when set, a project's
           # container_image too, for labs whose conversion step itself
-          # needs DANDI access.
-          DANDI_API_KEY: ${{ secrets.EMBER_DANDI_API_KEY }}
+          # needs DANDI access. Kept under its own name, not renamed --
+          # dandi-cli looks credentials up per dandi_instance
+          # (EMBER_DANDI_API_KEY for ember-dandi), and dispatch.py computes
+          # that name itself rather than expecting a generic DANDI_API_KEY.
+          EMBER_DANDI_API_KEY: ${{ secrets.EMBER_DANDI_API_KEY }}
           REGISTRY_PATH: ${{ vars.REGISTRY_PATH }}
           SESSIONS_PATH: ${{ vars.SESSIONS_PATH }}
           DRY_RUN_FLAG: ${{ inputs.dry_run == true && '--dry-run' || '' }}
