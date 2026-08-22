@@ -16,6 +16,10 @@ on:
         description: "Restrict to one lab name (blank = all registered projects)"
         required: false
         default: ""
+      task_force_ref:
+        description: "data-ingest-task-force branch/tag/SHA to check out for this run (blank = TASK_FORCE_REF variable, or 'main' if that's also unset)"
+        required: false
+        default: ""
 
 concurrency:
   group: ${{ github.workflow }}
@@ -29,26 +33,38 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: brain-bbqs/data-ingest-task-force
-          ref: main
+          # workflow_dispatch input wins (one-off debugging); falls back to
+          # the TASK_FORCE_REF repo variable (a standing override, e.g. to
+          # soak-test a branch); falls back to main.
+          ref: ${{ inputs.task_force_ref || vars.TASK_FORCE_REF || 'main' }}
           path: task-force
-
-      - name: Install dispatch environment
-        run: pip install --quiet "./task-force/dispatch/envs"
 
       - name: Run dispatch
         working-directory: task-force
         env:
-          EMBER_INCOMING_DIR: ${{ vars.EMBER_INCOMING_DIR }}
-          EMBER_STANDARDIZED_DIR: ${{ vars.EMBER_STANDARDIZED_DIR }}
+          # dispatch.py forwards this (by name only, never as a literal
+          # value) into every container it starts: its own dandi image
+          # (dandi download/upload run only in a container now, never
+          # directly on this host) and, when set, a project's
+          # container_image too, for labs whose conversion step itself
+          # needs DANDI access. Kept under its own name, not renamed --
+          # dandi-cli looks credentials up per dandi_instance
+          # (EMBER_DANDI_API_KEY for ember-dandi), and dispatch.py computes
+          # that name itself rather than expecting a generic DANDI_API_KEY.
+          EMBER_DANDI_API_KEY: ${{ secrets.EMBER_DANDI_API_KEY }}
+          REGISTRY_PATH: ${{ vars.REGISTRY_PATH }}
+          SESSIONS_PATH: ${{ vars.SESSIONS_PATH }}
           DRY_RUN_FLAG: ${{ inputs.dry_run == true && '--dry-run' || '' }}
           ONLY_FLAG: ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }}
         run: |
           set -eu
-          if [ -z "${EMBER_INCOMING_DIR:-}" ] || [ -z "${EMBER_STANDARDIZED_DIR:-}" ]; then
-            echo "::error::Set the EMBER_INCOMING_DIR and EMBER_STANDARDIZED_DIR repository variables (Settings > Secrets and variables > Actions > Variables) to absolute paths on this runner."
-            exit 1
-          fi
+          # No --incoming-root/--standardized-root here: dispatch.py always
+          # picks its own default (ember-incoming/ember-standardized siblings
+          # of this checkout) -- not overridable from this workflow.
+          REGISTRY_FLAG=""
+          [ -n "${REGISTRY_PATH:-}" ] && REGISTRY_FLAG="--registry $REGISTRY_PATH"
+          SESSIONS_FLAG=""
+          [ -n "${SESSIONS_PATH:-}" ] && SESSIONS_FLAG="--sessions $SESSIONS_PATH"
           python3 dispatch/dispatch.py \
-            --incoming-root "$EMBER_INCOMING_DIR" \
-            --standardized-root "$EMBER_STANDARDIZED_DIR" \
+            $REGISTRY_FLAG $SESSIONS_FLAG \
             $DRY_RUN_FLAG $ONLY_FLAG
