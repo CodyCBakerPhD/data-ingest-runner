@@ -3,7 +3,7 @@
 Self-hosted runner for https://github.com/brain-bbqs/data-ingest-task-force operations.
 
 `.github/workflows/cron_ingest.yml` runs on this runner on a schedule (and on demand via `workflow_dispatch`).
-It checks out [`data-ingest-task-force`](https://github.com/brain-bbqs/data-ingest-task-force) and runs its `dispatch/dispatch.py` — see that repo's `dispatch/README.md` for what a run actually does (download each lab's incoming dandiset, convert new sessions, upload the standardized output).
+It checks out [`data-ingest-task-force`](https://github.com/brain-bbqs/data-ingest-task-force) and runs its `dispatch/dispatch.py` (downloads each lab's incoming dandiset, converts new sessions, uploads the standardized outputs).
 
 ## Runner setup
 
