@@ -1,0 +1,39 @@
+name: Manual Ingest
+
+run-name: Manual Ingest${{ inputs.only != '' && format(' [{0}]', inputs.only) || '' }}${{ inputs.dry_run == true && ' (dry run)' || '' }}
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log actions without downloading, converting, uploading, or writing state"
+        type: boolean
+        default: false
+      only:
+        description: "Restrict to one lab name (blank = all registered projects)"
+        required: false
+        default: ""
+      task_force_ref:
+        description: "data-ingest-task-force branch/tag/SHA to check out for this run (blank = TASK_FORCE_REF variable, or 'main' if that's also unset)"
+        required: false
+        default: ""
+
+# Literal group name, shared with Scheduled Ingest: github.workflow differs
+# between the two entry points, so a constant is what keeps a manual run
+# and a scheduled run from ingesting at the same time.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  Ingest:
+    uses: ./.github/workflows/ingest.yml
+    with:
+      dry_run: ${{ inputs.dry_run }}
+      only: ${{ inputs.only }}
+      task_force_ref: ${{ inputs.task_force_ref }}
+    secrets:
+      EMBER_DANDI_API_KEY: ${{ secrets.EMBER_DANDI_API_KEY }}
