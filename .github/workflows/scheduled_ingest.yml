@@ -1,0 +1,23 @@
+name: Scheduled Ingest
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+# Literal group name, shared with Manual Ingest: github.workflow differs
+# between the two entry points, so a constant is what keeps a manual run
+# and a scheduled run from ingesting at the same time.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  Ingest:
+    uses: ./.github/workflows/ingest.yml
+    # No inputs: a scheduled run is always a full, non-dry run against
+    # TASK_FORCE_REF (or main). Overrides live on Manual Ingest.
+    secrets:
+      EMBER_DANDI_API_KEY: ${{ secrets.EMBER_DANDI_API_KEY }}
