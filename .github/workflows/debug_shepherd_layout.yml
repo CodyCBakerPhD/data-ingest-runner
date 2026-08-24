@@ -23,6 +23,6 @@ jobs:
       - name: List raw layout
         run: |
           set -eu
-          ROOT="${GITHUB_WORKSPACE}/../ember-incoming/${{ inputs.dandiset }}/sourcedata/raw"
+          ROOT="${GITHUB_WORKSPACE}/ember-incoming/${{ inputs.dandiset }}/sourcedata/raw"
           echo "Listing: $ROOT"
           find "$ROOT" -maxdepth 4 -exec ls -ld {} \; 2>&1 | head -200
