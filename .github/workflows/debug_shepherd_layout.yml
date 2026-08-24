@@ -1,0 +1,28 @@
+name: Debug Shepherd Raw Layout
+
+# Temporary, read-only diagnostic: prints the on-disk layout under a
+# Shepherd dandiset's sourcedata/raw/ so batch_convert.py's session
+# discovery can be fixed to match reality. Not part of the ingest
+# pipeline; safe to delete once the layout is known.
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      dandiset:
+        description: "Incoming dandiset ID under ember-incoming (e.g. 000528)"
+        required: true
+        default: "000528"
+
+jobs:
+  Inspect:
+    runs-on: [self-hosted, ember, ingest]
+    steps:
+      - name: List raw layout
+        run: |
+          set -eu
+          ROOT="${GITHUB_WORKSPACE}/../ember-incoming/${{ inputs.dandiset }}/sourcedata/raw"
+          echo "Listing: $ROOT"
+          find "$ROOT" -maxdepth 4 -exec ls -ld {} \; 2>&1 | head -200
