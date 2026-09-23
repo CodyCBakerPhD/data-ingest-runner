@@ -30,7 +30,11 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     needs: [Ingest]
-    if: ${{ always() && needs.Ingest.result == 'failure' }}
+    # 'cancelled' as well as 'failure': an offline runner never fails the
+    # job -- it just sits queued until GitHub cancels it 24h later -- so a
+    # cancelled Ingest is the one signal that the runner is down. Repeats
+    # daily (each day's run queues and times out in turn) until it's back.
+    if: ${{ always() && (needs.Ingest.result == 'failure' || needs.Ingest.result == 'cancelled') }}
     steps:
       - uses: dawidd6/action-send-mail@v18
         with:
@@ -38,7 +42,15 @@ jobs:
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "CI Failure: Data Ingest Runner Scheduled Ingest"
+          # Cancelled means the runner never picked the job up: say so, since
+          # it's the runner to go fix then, not the ingest.
+          subject: >-
+            ${{ needs.Ingest.result == 'cancelled'
+            && 'Runner Offline: Data Ingest Runner Scheduled Ingest'
+            || 'CI Failure: Data Ingest Runner Scheduled Ingest' }}
           to: cody.c.baker.phd@gmail.com
           from: Data Ingest Runner <data-ingest-runner@users.noreply.github.com>
-          body: "The scheduled ingest workflow failed, please check status at https://github.com/CodyCBakerPhD/data-ingest-runner/actions/workflows/scheduled_ingest.yml"
+          body: >-
+            ${{ needs.Ingest.result == 'cancelled'
+            && 'The scheduled ingest was cancelled without ever starting: GitHub cancels a job once it has waited 24 hours for a runner, so the self-hosted runner is most likely offline. Check it at https://github.com/CodyCBakerPhD/data-ingest-runner/settings/actions/runners and the run at https://github.com/CodyCBakerPhD/data-ingest-runner/actions/workflows/scheduled_ingest.yml'
+            || 'The scheduled ingest workflow failed, please check status at https://github.com/CodyCBakerPhD/data-ingest-runner/actions/workflows/scheduled_ingest.yml' }}
